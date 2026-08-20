@@ -19,10 +19,10 @@ struct ContentView: View {
     
     func pegs(colors: Array<Color>) -> some View{
         HStack {
-            ForEach(colors.indices, id: \.self) { i in
+            ForEach(colors.indices, id: \.self) { index in
                 RoundedRectangle(cornerRadius: 10)
                     .aspectRatio(1, contentMode: .fit)
-                    .foregroundStyle(colors[i])
+                    .foregroundStyle(colors[index])
             }
             MatchMarker(matches:[.exact, .inexact, .nomatch, .exact])
         }
@@ -33,3 +33,4 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
+ 
