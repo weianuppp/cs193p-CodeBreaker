@@ -8,7 +8,7 @@
 import SwiftUI
 
 extension Animation{
-    static let codeBreaker = Animation.easeInOut(duration: 2)
+    static let codeBreaker = Animation.easeInOut(duration: 1)
     static let guess = Animation.codeBreaker
     static let restart = Animation.codeBreaker
     static let selection = Animation.codeBreaker
