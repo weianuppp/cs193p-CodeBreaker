@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct CodeBreakerView: View {
+    // MARK: Data In
+    @Environment(\.scenePhase) var scenePhase
     
     // MARK: Data Share with Me
     let game: CodeBreaker
@@ -51,12 +53,13 @@ struct CodeBreakerView: View {
                     .frame(maxHeight: 90)
             }
         }
+        .trackElapsedTime(in: game)
         .toolbar {
             ToolbarItem(placement: .primaryAction){
                 Button("Restart", systemImage: "arrow.circlepath",action: restart)
             }
             ToolbarItem {
-                ElapsedTime(startTime: game.startTime, endTime:game.endTime)
+                ElapsedTime(startTime: game.startTime, endTime:game.endTime, elapsedTime: game.elapsedTime)
                     .monospaced()
                     .lineLimit(1)
             }
@@ -65,8 +68,8 @@ struct CodeBreakerView: View {
     }
     
     func changePegAtSelectionToPeg(to peg: Peg){
-            game.setGuessPeg(peg, at: selection)
-            selection = (selection + 1) % game.masterCode.pegs.count
+        game.setGuessPeg(peg, at: selection)
+        selection = (selection + 1) % game.masterCode.pegs.count
     }
     
     
@@ -97,8 +100,37 @@ struct CodeBreakerView: View {
     
 }
 
+extension View {
+    func trackElapsedTime(in game: CodeBreaker) -> some View {
+        self.modifier(ElapsedTimeTracker(game: game))
+    }
+}
 
-
+struct ElapsedTimeTracker: ViewModifier {
+    @Environment(\.scenePhase) var scenePhase
+    let game: CodeBreaker
+    
+    func body(content: Content) -> some View {
+        content
+            .onAppear{
+                game.startTimer()
+            }
+            .onDisappear(){
+                game.pauseTimer()
+            }
+            .onChange(of: game){ oldGame, newGame in
+                oldGame.pauseTimer()
+                newGame.startTimer()
+            }
+            .onChange(of: scenePhase) {
+                switch scenePhase {
+                case .active: game.startTimer()
+                case .background: game.pauseTimer()
+                default: break
+                }
+            }
+    }
+}
 
 #Preview {
     @Previewable @State  var game = CodeBreaker(name: "Preview", pegChoices: [.blue, .red, .orange])

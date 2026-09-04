@@ -11,8 +11,12 @@ struct GameList: View {
     // MARK: Data Owned by Me
     @State private var games: [CodeBreaker] = []
     
+    @State private var gameToEdit: CodeBreaker?
+    
     // MARK: Data Shared with Me
     @Binding var selection: CodeBreaker?
+    
+    
     
     var body: some View {
         List(selection: $selection) {
@@ -21,7 +25,12 @@ struct GameList: View {
                     GameSummary(game: game)
                 }
                 .contextMenu {
+                    editButton(for: game)// editing a game
                     deleteButton(for: game)
+                }
+                .swipeActions(edge: .leading) {
+                    editButton(for: game)
+                        .tint(.blue)
                 }
             }
             .onDelete { offsets in
@@ -39,18 +48,53 @@ struct GameList: View {
         }
         .listStyle(.plain)
         .toolbar {
-            Button("Add Game", systemImage: "plus"){
-                withAnimation{
-                    let newGame = CodeBreaker(name: "Untitled", pegChoices: [.red, .blue])
-                    games.append(newGame)
-                }
-            }
-            EditButton()
+            addButton
+            EditButton() // editing the List of games
         }
         
         .onAppear {
             addSampleGames()
         }
+    }
+    
+    func editButton(for game: CodeBreaker) -> some View {
+        Button("Edit", systemImage: "plus"){
+            gameToEdit = game
+        }
+    }
+    
+    var addButton: some View{
+        Button("Add Game", systemImage: "plus"){
+            gameToEdit = CodeBreaker(name: "Untitled", pegChoices: [.red, .blue])
+        }
+        .sheet(isPresented: showGameEditor) {
+            gameEditor
+        }
+    }
+    
+    @ViewBuilder
+    var gameEditor: some View{
+        if let gameToEdit{
+            let copyOfGameToEdit = CodeBreaker(name: gameToEdit.name, pegChoices:  gameToEdit.pegChoices)
+            GameEditor(game: copyOfGameToEdit) {
+                if let index = games.firstIndex(of: gameToEdit){
+                    games[index] = copyOfGameToEdit
+                }else{
+                    games.insert(gameToEdit, at: 0)
+                }
+            }
+        }
+    }
+    
+    var showGameEditor: Binding<Bool> {
+        Binding<Bool>(get:{
+            gameToEdit != nil
+        },
+        set: { newValue in
+            if !newValue {
+                gameToEdit = nil
+            }
+        })
     }
     
     func deleteButton(for game: CodeBreaker) -> some View {
