@@ -7,12 +7,6 @@
 
 import SwiftUI
 
-enum Match{
-    case nomatch
-    case exact
-    case inexact
-}
-
 struct MatchMarker: View{
     // MARK: Data In
     let matches: [Match]
