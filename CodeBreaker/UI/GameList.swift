@@ -12,7 +12,6 @@ struct GameList: View {
     // MARK: Data In
     @Environment(\.modelContext) var modelContext
     
-    
     // MARK: Data Owned by Me
     @State private var gameToEdit: CodeBreaker?
     
@@ -24,23 +23,27 @@ struct GameList: View {
         _selection = selection
         let lowercaseSearch = search.lowercased()
         let capitalizedSearch = search.capitalized
+        let completeedOnly = sortBy == .completed
         let predicate = #Predicate<CodeBreaker> { game in
-            search.isEmpty || game.name.contains(lowercaseSearch) || game.name.contains(capitalizedSearch)
+            (!completeedOnly || game.isOver) &&
+            (search.isEmpty || game.name.contains(lowercaseSearch) || game.name.contains(capitalizedSearch))
         }
         switch sortBy {
         case .name: _games = Query(filter: predicate, sort: \CodeBreaker.name)
-        case .recent: _games = Query(filter: predicate, sort: \CodeBreaker.lastAttemptDate, order: .reverse)
+        case .recent, .completed: _games = Query(filter: predicate, sort: \CodeBreaker.lastAttemptDate, order: .reverse)
         }
     }
     
     enum SortOption: CaseIterable{
         case name
         case recent
+        case completed
         
         var title: String {
             switch self {
             case .name: "Sort by Name"
             case .recent: "Recent"
+            case . completed: "Completed"
             }
         }
     }

@@ -28,6 +28,7 @@ struct GameChooser: View {
                 .navigationTitle("Code Breaker")
                 .navigationBarTitleDisplayMode(.large)
                 .searchable(text: $search, placement: .navigationBarDrawer)
+                .animation(.easeOut, value: search)
         }
         detail: {
             if let selection {
