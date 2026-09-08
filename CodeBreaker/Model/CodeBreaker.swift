@@ -10,11 +10,11 @@ import SwiftData
 
 typealias Peg = String
 
-@Model class CodeBreaker {
+@Model class CodeBreaker: Decodable {
     var name: String
     @Relationship(deleteRule: .cascade) var masterCode: Code = Code(kind: .master(isHidden: true))
     @Relationship(deleteRule: .cascade) var guess: Code = Code(kind: .guess)
-    @Relationship(deleteRule: .cascade) var _attempts = [Code]()
+    @Relationship(deleteRule: .cascade, inverse: \Code.game) var _attempts = [Code]()
     var pegChoices: [Peg]
     @Transient var startTime: Date?
     var endTime: Date?
@@ -93,6 +93,23 @@ typealias Peg = String
         }else{
             guess.pegs[index] = pegChoices.first ?? Code.missingPeg
         }
+    }
+
+    // MARK: - Decodable
+
+    required convenience init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let name = try container.decode(String.self, forKey: .name)
+        let pegChoices = try container.decode([Peg].self, forKey: .pegChoices)
+        self.init(name: name, pegChoices: pegChoices)
+        masterCode = try container.decode(CodeSnapshot.self, forKey: .masterCode).makeCode()
+        guess = try container.decode(CodeSnapshot.self, forKey: .guess).makeCode()
+        attempts = try container.decode([CodeSnapshot].self, forKey: .attempts).map { $0.makeCode() }
+        startTime = try container.decodeIfPresent(Date.self, forKey: .startTime)
+        endTime = try container.decodeIfPresent(Date.self, forKey: .endTime)
+        elapsedTime = try container.decode(TimeInterval.self, forKey: .elapsedTime)
+        lastAttemptDate = try container.decodeIfPresent(Date.self, forKey: .lastAttemptDate)
+        isOver = try container.decode(Bool.self, forKey: .isOver)
     }
     
 }

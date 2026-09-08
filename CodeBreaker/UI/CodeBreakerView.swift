@@ -58,6 +58,17 @@ struct CodeBreakerView: View {
             ToolbarItem(placement: .primaryAction){
                 Button("Restart", systemImage: "arrow.circlepath",action: restart)
             }
+            ToolbarItem{
+                Button("Save", systemImage: "square.and.arrow.down"){
+                    // write JSON of this game into the document directory
+                    if let json = try? JSONEncoder().encode(game) {
+                        let url = URL.documentsDirectory
+                            .appendingPathComponent(game.name)
+                            .appendingPathExtension("json")
+                        try? json.write(to: url)
+                    }
+                }
+            }
             ToolbarItem {
                 ElapsedTime(startTime: game.startTime, endTime:game.endTime, elapsedTime: game.elapsedTime)
                     .monospaced()

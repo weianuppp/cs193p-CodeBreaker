@@ -9,11 +9,12 @@
 import SwiftUI
 import SwiftData
 
-@Model class Code {
+@Model final class Code {
     
     var _kind: String = Kind.unknown.description
     var pegs: [Peg]
     var timestamp = Date.now
+    var game: CodeBreaker?
     
     var kind: Kind {
         get { return Kind(_kind) }
